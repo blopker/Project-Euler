@@ -1,77 +1,66 @@
-import math
-import euler
 from itertools import permutations
 
-def is_tri(n):
-    a = math.sqrt(3 * n + 1)
-    if ((1 - a) / 3.0) % 1 == 0 or ((1 + a) / 3.0) % 1 == 0:
-        return True
-    return False
+def p3(n):
+    return n*(n+1)/2
 
+def p4(n):
+    return n**2
 
-def is_square(n):
-    a = math.sqrt(3 * n + 1)
-    if ((1 - a) / 3.0) % 1 == 0 or ((1 + a) / 3.0) % 1 == 0:
-        return True
-    return False
+def p5(n):
+    return n*(3*n-1)/2
 
+def p6(n):
+    return n*(2*n-1)
 
-def is_pent(n):
-    a = math.sqrt(24 * n + 1)
-    if ((1 - a) / 6.0) % 1 == 0 or ((1 + a) / 6.0) % 1 == 0:
-        return True
-    return False
+def p7(n):
+    return n*(5*n-3)/2
 
+def p8(n):
+    return n*(3*n-2)
 
-def is_hex(n):
-    a = math.sqrt(8 * n + 1)
-    if ((1 - a) / 4.0) % 1 == 0 or ((1 + a) / 4.0) % 1 == 0:
-        return True
-    return False
+def generate_all_fours(func):
+    n = 0
+    while func(n) < 1000:
+        n = n + 1
+    four = func(n)
+    while four < 10000:
+        yield four
+        n = n + 1
+        four = func(n)
 
+def prefix(n):
+    return n/100
 
-def is_hep(n):
-    a = math.sqrt(40 * n + 9)
-    if ((3 - a) / 10.0) % 1 == 0 or ((3 + a) / 10.0) % 1 == 0:
-        return True
-    return False
+def postfix(n):
+    return n%(n/100*100)
 
+# Generate a prefix hash for quickly finding numbers.
+funcs = [p3, p4, p5, p6, p7, p8]
+# funcs = [p3, p4, p5]
+pre = []
+for func in funcs:
+    dic = {}
+    for four in generate_all_fours(func):
+        dic.setdefault(prefix(four),[]).append(four)
+    pre.append(dic)
 
-def is_oct(n):
-    a = math.sqrt(3 * n + 1)
-    if ((1 - a) / 3.0) % 1 == 0 or ((1 + a) / 3.0) % 1 == 0:
-        return True
-    return False
+answers = []
 
+def find_next_four(fours, fours_pool):
+    if len(fours) == len(funcs) and prefix(fours[0]) == postfix(fours[-1]):
+        answers.append(fours)
+    if fours_pool == []:
+        return 
+    for four in fours_pool.pop().get(postfix(fours[-1]), []):
+        new_fours = list(fours)
+        new_fours.append(four)
+        find_next_four(new_fours, fours_pool)
 
-def check(num, l):
-    for end in range(10, 100):
-        n = (num - num / 100 * 100) * 100 + end
-        if n in l:
-            return True
-    return False
-# for a in range(1000, 9999):
-#     if is_oct(a):
-#         for b in range(10, 100):
-#             euler.concat_numbers(a / 100, b)
-tri = set([x for x in range(1000, 9999) if is_tri(x)])
-sq = set([x for x in range(1000, 9999) if is_square(x)])
-pen = set([x for x in range(1000, 9999) if is_pent(x)])
-hex = set([x for x in range(1000, 9999) if is_hex(x)])
-hep = set([x for x in range(1000, 9999) if is_hep(x)])
-oct = set([x for x in range(1000, 9999) if is_oct(x)])
+for fours_pool in permutations(pre):
+    fours_pool = list(fours_pool)
+    start = [four for x in fours_pool.pop().values() for four in x]
 
-ll = permutations([oct, hep, hex, pen, sq, tri], 6)
-for l in ll:
-    for a in l[0]:
-        if check(a, l[1]):
-            for b in l[1]:
-                if check(b, l[2]):
-                    for c in l[2]:
-                        if check(c, l[3]):
-                            for d in l[3]:
-                                if check(d, l[4]):
-                                    for e in l[4]:
-                                        if check(e, l[5]):
-                                            for f in l[5]:
-                                                print a, b, c, d, e, f
+    for four in start:
+        find_next_four([four], list(fours_pool))
+        
+print sum(answers[0])
