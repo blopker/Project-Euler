@@ -44,11 +44,11 @@ for func in funcs:
         dic.setdefault(prefix(four),[]).append(four)
     pre.append(dic)
 
-answers = []
+answer = []
 
 def find_next_four(fours, fours_pool):
     if len(fours) == len(funcs) and prefix(fours[0]) == postfix(fours[-1]):
-        answers.append(fours)
+        answer.append(fours)
     if fours_pool == []:
         return 
     for four in fours_pool.pop().get(postfix(fours[-1]), []):
@@ -57,10 +57,11 @@ def find_next_four(fours, fours_pool):
         find_next_four(new_fours, fours_pool)
 
 for fours_pool in permutations(pre):
+    if answer: break
     fours_pool = list(fours_pool)
     start = [four for x in fours_pool.pop().values() for four in x]
 
     for four in start:
         find_next_four([four], list(fours_pool))
         
-print sum(answers[0])
+print sum(answer[0])
